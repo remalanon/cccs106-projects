@@ -82,22 +82,22 @@ I also understood how Git and Flet complement each other—Git helps track and s
 
 ### Git Repository
 - My Github repository with commit history.
-![Alt text](week2_labs\lab2_screenshots\repo.png "Github repo screenshot")
-![Alt text](week2_labs\lab2_screenshots\commit_history.png "Github repo screenshot")
+![Github repo screenshot](week2_labs/lab2_screenshots\repo.png) 
+![Github repo screenshot](week2_labs/lab2_screenshots\commit_history.png)
 
 - Local git log showing commits  
-![Alt text](week2_labs\lab2_screenshots\local_logs.png "Local git log")
+![Local git log](week2_labs/lab2_screenshots\local_logs.png)
 
 
 ### GUI Applications
 - `hello_flet.py` running with all features  
-![Alt text](week2_labs\lab2_screenshots\hello_flet.png "Hello Flet GUI")
+![Hello Flet GUI](week2_labs/lab2_screenshots\hello_flet.png)
 
 - `personal_info_gui.py` with filled form and generated profile  
-![Alt text](week2_labs\lab2_screenshots\perinfo.png "Personal Info GUI")
+![Personal Info GUI](week2_labs/lab2_screenshots\perinfo.png)
 
 - 'enhanced calculator.py' with a GUI and improved usability.
-![Alt text](week2_labs\lab2_screenshots\encal.png "Enhanced Calculator")
+![Enhanced Calculator](week2_labs/lab2_screenshots\encal.png)
 
 ---
 
