@@ -1,8 +1,6 @@
-# Enhanced Calculator - Coming Soon 
-# enhanced_calculator.py
 # CCCS 106 - Week 2 Lab Exercise
 # Enhanced GUI Calculator using Flet
-# Student: [Your Name]
+# Student: Remar Malanon
 
 import flet as ft
 

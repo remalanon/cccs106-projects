@@ -1,74 +1,107 @@
-# CCCS 106 Projects 
-Application Development and Emerging Technologies 
-Academic Year 2025-2026 
-ECHO is on.
-## Repository Structure 
-- week1_labs/ - Environment setup and Python basics 
-- week2_labs/ - Git and Flet GUI development 
+# Lab 2 Report: Git Version Control and Flet GUI Development
 
-# CCCS 106 Projects
-Application Development and Emerging Technologies  
-Academic Year 2025-2026
+**Student Name:** Remar Malanon  
+**Student ID:** 231002323  
+**Section:** BSCS 3A
+**Date:** Sep 2, 2025 
 
-## Student Information
-- **Name:** Remar Malanon
-- **Student ID:** 231002323
-- **Program:** Bachelor of Science in Computer Science
-- **Section:** 3A
+---
 
-## Repository Structure
+## Git Configuration
 
-### Week 1 Labs - Environment Setup and Python Basics
-- `week1_labs/hello_world.py` - Basic Python introduction
-- `week1_labs/basic_calculator.py` - Simple console calculator
+### Repository Setup
+- **GitHub Repository:** [https://github.com/remalanon/cccs106-projects](https://github.com/remalanon/cccs106-projects)  
+- **Local Repository:** ✅ Initialized and connected  
+- **Commit History:** [Number] commits with descriptive messages  
 
-### Week 2 Labs - Git and Flet GUI Development
-- `week2_labs/hello_flet.py` - First Flet GUI application
-- `week2_labs/personal_info_gui.py` - Enhanced personal information manager
-- `week2_labs/enhanced_calculator.py` - GUI calculator (coming soon)
+### Git Skills Demonstrated
+- ✅ Repository initialization and configuration  
+- ✅ Adding, committing, and pushing changes  
+- ✅ Branch creation and merging  
+- ✅ Remote repository management  
 
-### Module 1 Final Project
-- `module1_final/` - Final integrated project (TBD)
+---
 
-## Technologies Used
-- **Python 3.8+** - Main programming language
-- **Flet 0.28.3** - GUI framework for cross-platform applications
-- **Git & GitHub** - Version control and collaboration
-- **VS Code** - Integrated development environment
+## Flet GUI Applications
 
-## Development Environment
-- **Virtual Environment:** cccs106_env
-- **Python Packages:** flet==0.28.3
-- **Platform:** Windows 10/11
+### 1. `hello_flet.py`
+- **Status:** ✅ Completed  
+- **Features:** Interactive greeting, student info display, dialog boxes  
+- **UI Components:** Text, TextField, Buttons, Dialog, Containers  
+- **Notes:** Learned how to trigger dialog popups based on user input  
 
-## How to Run Applications
+### 2. `personal_info_gui.py`
+- **Status:** ✅ Completed  
+- **Features:** Form inputs, dropdowns, radio buttons, profile generation  
+- **UI Components:** TextField, Dropdown, RadioGroup, Containers, Scrolling  
+- **Error Handling:** Input validation and user feedback  
+- **Notes:** Practiced handling multiple input types and validating them  
 
-### Prerequisites
-1. Python 3.8+ installed
-2. Virtual environment activated: `cccs106_env\Scripts\activate`
-3. Flet installed: `pip install flet==0.28.3`
+### 3. enhanced_calculator.py
+- **Status:** ✅ Completed  
+- **Features:** Basic and advanced operations (+, -, ×, ÷, %, exponentiation, clear, delete)  
+- **UI Components:** Buttons, TextField (for display), Grid layout  
+- **Error Handling:** Division by zero handling, input validation, error feedback  
+- **Notes:** Improved version of the basic calculator with better UI and functionality  
 
-### Running GUI Applications
-```cmd
-# Navigate to project directory
-cd week2_labs
+---
 
-# Run applications
-python hello_flet.py
-python personal_info_gui.py
-Commit and push README.md
+## Technical Skills Developed
 
-# Add the updated README.md file to the staging area
-# This stages the modified README.md file so it will be included in the next commit
-# Git tracks changes to this file and prepares it for version control
-git add README.md
+### Git Version Control
+- Understanding of repository concepts  
+- Basic Git workflow (add, commit, push)  
+- Branch management and merging  
+- Remote repository collaboration  
 
-# Commit the staged changes with a descriptive message
-# Creates a permanent snapshot of the README.md updates in the repository history
-# The commit message should clearly describe what was changed for future reference
-git commit -m "Update README.md with new application information"
+### Flet GUI Development
+- Flet 0.28.3 syntax and components  
+- Page configuration and layout management  
+- Event handling and user interaction  
+- Modern UI design principles  
 
-# Push the committed changes to the remote GitHub repository
-# Synchronizes your local main branch with the remote repository on GitHub
-# This makes your updated README.md visible to others and backs up your changes
-git push origin main
+---
+
+## Challenges and Solutions
+One of the main challenges I encountered was using Git through the Command Prompt (CMD). At first, I had difficulty remembering the exact commands for staging, committing, and pushing changes. I also struggled with setting up the remote origin and handling errors when pushing to GitHub.  
+
+**Solution:** I reviewed Git documentation, practiced frequently used commands, and tried repeating the Git workflow until it became more natural. I also learned how to check my repository status and commit history to verify if I had done things correctly. 
+
+---
+
+## Learning Outcomes
+Through this lab, I learned not only how to use Git for version control but also how important it is for managing projects effectively. I realized that writing clear commit messages helps keep track of progress and makes collaboration easier.  
+
+I also developed practical skills in GUI development using Flet, such as handling events, validating inputs, and designing clean layouts. By working on the enhanced calculator and personal information GUI, I learned how small improvements in design and error handling can make a big difference in usability.  
+
+I also understood how Git and Flet complement each other—Git helps track and share code changes, while Flet allows me to create interactive applications. This combination gave me more confidence in both collaborative programming and application development.  
+
+---
+
+## Screenshots
+
+### Git Repository
+- My Github repository with commit history.
+![Alt text](week2_labs\lab2_screenshots\repo.png "Github repo screenshot")
+![Alt text](week2_labs\lab2_screenshots\commit_history.png "Github repo screenshot")
+
+- Local git log showing commits  
+![Alt text](week2_labs\lab2_screenshots\local_logs.png "Local git log")
+
+
+### GUI Applications
+- `hello_flet.py` running with all features  
+![Alt text](week2_labs\lab2_screenshots\hello_flet.png "Hello Flet GUI")
+
+- `personal_info_gui.py` with filled form and generated profile  
+![Alt text](week2_labs\lab2_screenshots\perinfo.png "Personal Info GUI")
+
+- 'enhanced calculator.py' with a GUI and improved usability.
+![Alt text](week2_labs\lab2_screenshots\encal.png "Enhanced Calculator")
+
+---
+
+## Future Enhancements
+- Add more scientific functions to the calculator (e.g., square root, exponentiation)  
+- Implement file saving/loading in personal_info_gui.py  
+- Improve overall UI design with more modern layouts and themes  
