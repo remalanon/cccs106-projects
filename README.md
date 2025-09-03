@@ -12,7 +12,7 @@
 ### Repository Setup
 - **GitHub Repository:** [https://github.com/remalanon/cccs106-projects](https://github.com/remalanon/cccs106-projects)  
 - **Local Repository:** ✅ Initialized and connected  
-- **Commit History:** [Number] commits with descriptive messages  
+
 
 ### Git Skills Demonstrated
 - ✅ Repository initialization and configuration  
