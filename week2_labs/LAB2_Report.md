@@ -83,6 +83,7 @@ I also understood how Git and Flet complement each other—Git helps track and s
 ### Git Repository
 - My Github repository with commit history.
 ![Github repo screenshot](lab2_screenshots/repo.png) 
+![Github Commit History](lab2_screenshots/commithistory.png)
 ![Github repo screenshot](lab2_screenshots/commit_history.png)
 
 - Local git log showing commits  
