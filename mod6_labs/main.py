@@ -1,0 +1,633 @@
+"""Weather Application using Flet v0.28.3"""
+
+import flet as ft
+from weather_service import WeatherService
+from config import Config
+
+
+class WeatherApp:
+    """Main Weather Application class."""
+
+    def __init__(self, page: ft.Page):
+        self.page = page
+        self.weather_service = WeatherService()
+        self.search_history = []
+        self.last_weather_data = None
+        self.current_unit = "metric"
+        self.current_mood = "default"  
+        self.setup_page()
+        self.build_ui()
+
+    # ------------------ BASIC UI SETUP ------------------ #
+
+    def setup_page(self):
+        """Configure page settings."""
+        self.page.title = Config.APP_TITLE
+        self.page.theme_mode = ft.ThemeMode.SYSTEM
+        self.page.theme = ft.Theme(color_scheme_seed=ft.Colors.BLUE)
+        self.page.padding = 20
+        self.page.window.width = Config.APP_WIDTH
+        self.page.window.height = Config.APP_HEIGHT
+        self.page.window.resizable = False
+        self.page.window.center()
+
+    def get_theme_color(self):
+        """Return background color based on current theme and mood."""
+        mood_colors = {
+            "sunny": ft.Colors.ORANGE_900 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.ORANGE_50,
+            "cloudy": ft.Colors.BLUE_GREY_900 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.BLUE_GREY_50,
+            "rainy": ft.Colors.BLUE_900 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.BLUE_100,
+            "snowy": ft.Colors.CYAN_900 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.CYAN_50,
+            "stormy": ft.Colors.PURPLE_900 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.PURPLE_50,
+            "foggy": ft.Colors.GREY_800 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.GREY_200,
+            "default": ft.Colors.BLUE_900 if self.page.theme_mode == ft.ThemeMode.DARK else ft.Colors.BLUE_50,
+        }
+        return mood_colors.get(self.current_mood, mood_colors["default"])
+
+    def get_mood_colors(self):
+        """Return color scheme based on current mood."""
+        is_dark = self.page.theme_mode == ft.ThemeMode.DARK
+        
+        mood_schemes = {
+            "sunny": {
+                "primary": ft.Colors.ORANGE_700,
+                "secondary": ft.Colors.AMBER_700,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.BROWN_900,
+                "sub_text": ft.Colors.ORANGE_200 if is_dark else ft.Colors.BROWN_700,
+                "card": ft.Colors.ORANGE_800 if is_dark else ft.Colors.ORANGE_100,
+                "divider": ft.Colors.ORANGE_400 if is_dark else ft.Colors.ORANGE_300,
+            },
+            "cloudy": {
+                "primary": ft.Colors.BLUE_GREY_700,
+                "secondary": ft.Colors.GREY_700,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.BLUE_GREY_900,
+                "sub_text": ft.Colors.BLUE_GREY_300 if is_dark else ft.Colors.BLUE_GREY_700,
+                "card": ft.Colors.BLUE_GREY_800 if is_dark else ft.Colors.BLUE_GREY_100,
+                "divider": ft.Colors.BLUE_GREY_500 if is_dark else ft.Colors.BLUE_GREY_300,
+            },
+            "rainy": {
+                "primary": ft.Colors.BLUE_700,
+                "secondary": ft.Colors.LIGHT_BLUE_700,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.BLUE_900,
+                "sub_text": ft.Colors.BLUE_200 if is_dark else ft.Colors.BLUE_700,
+                "card": ft.Colors.BLUE_800 if is_dark else ft.Colors.BLUE_100,
+                "divider": ft.Colors.BLUE_400 if is_dark else ft.Colors.BLUE_300,
+            },
+            "snowy": {
+                "primary": ft.Colors.CYAN_700,
+                "secondary": ft.Colors.LIGHT_BLUE_400,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.CYAN_900,
+                "sub_text": ft.Colors.CYAN_200 if is_dark else ft.Colors.CYAN_700,
+                "card": ft.Colors.CYAN_800 if is_dark else ft.Colors.CYAN_50,
+                "divider": ft.Colors.CYAN_400 if is_dark else ft.Colors.CYAN_300,
+            },
+            "stormy": {
+                "primary": ft.Colors.PURPLE_700,
+                "secondary": ft.Colors.DEEP_PURPLE_700,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.PURPLE_900,
+                "sub_text": ft.Colors.PURPLE_200 if is_dark else ft.Colors.PURPLE_700,
+                "card": ft.Colors.PURPLE_800 if is_dark else ft.Colors.PURPLE_100,
+                "divider": ft.Colors.PURPLE_400 if is_dark else ft.Colors.PURPLE_300,
+            },
+            "foggy": {
+                "primary": ft.Colors.GREY_700,
+                "secondary": ft.Colors.BLUE_GREY_600,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.GREY_900,
+                "sub_text": ft.Colors.GREY_300 if is_dark else ft.Colors.GREY_700,
+                "card": ft.Colors.GREY_800 if is_dark else ft.Colors.GREY_100,
+                "divider": ft.Colors.GREY_500 if is_dark else ft.Colors.GREY_400,
+            },
+            "default": {
+                "primary": ft.Colors.BLUE_700,
+                "secondary": ft.Colors.LIGHT_BLUE_700,
+                "text": ft.Colors.WHITE if is_dark else ft.Colors.BLACK,
+                "sub_text": ft.Colors.GREY_400 if is_dark else ft.Colors.GREY_700,
+                "card": ft.Colors.BLUE_GREY_900 if is_dark else ft.Colors.BLUE_GREY_50,
+                "divider": ft.Colors.GREY_700 if is_dark else ft.Colors.GREY_300,
+            }
+        }
+        return mood_schemes.get(self.current_mood, mood_schemes["default"])
+
+    def determine_weather_mood(self, weather_data: dict):
+        """Determine the mood based on weather conditions."""
+        if not weather_data or "weather" not in weather_data:
+            return "default"
+            
+        weather_id = weather_data["weather"][0]["id"]
+        main_weather = weather_data["weather"][0]["main"].lower()
+        description = weather_data["weather"][0]["description"].lower()
+        
+        # Weather condition mapping based on OpenWeatherMap codes
+        if weather_id in [800]:  
+            return "sunny"
+        elif weather_id in [801, 802]:  # Few clouds, scattered clouds
+            return "sunny"  # Still mostly sunny
+        elif weather_id in [803, 804] or "overcast" in description:  # Broken clouds, overcast
+            return "cloudy"
+        elif weather_id in [300, 301, 302, 310, 311, 312, 313, 314, 321, 500, 501, 502, 503, 504, 511, 520, 521, 522, 531]:
+            return "rainy"
+        elif weather_id in [600, 601, 602, 611, 612, 613, 615, 616, 620, 621, 622]:
+            return "snowy"
+        elif weather_id in [200, 201, 202, 210, 211, 212, 221, 230, 231, 232]:
+            return "stormy"
+        elif weather_id in [701, 711, 721, 731, 741, 751, 761, 762, 771, 781]:
+            return "foggy"
+        elif "thunder" in description:
+            return "stormy"
+        elif "drizzle" in description or "rain" in description:
+            return "rainy"
+        elif "snow" in description:
+            return "snowy"
+        elif "fog" in description or "mist" in description:
+            return "foggy"
+        elif "cloud" in description:
+            return "cloudy"
+        else:
+            return "sunny"  # Default to sunny for unknown conditions
+
+    def update_mood_theme(self, weather_data: dict):
+        """Update the app theme based on weather mood."""
+        new_mood = self.determine_weather_mood(weather_data)
+        
+        if new_mood != self.current_mood:
+            self.current_mood = new_mood
+            mood_primary_colors = {
+                "sunny": ft.Colors.ORANGE,
+                "cloudy": ft.Colors.BLUE_GREY,
+                "rainy": ft.Colors.BLUE,
+                "snowy": ft.Colors.CYAN,
+                "stormy": ft.Colors.PURPLE,
+                "foggy": ft.Colors.GREY,
+                "default": ft.Colors.BLUE,
+            }
+            
+            self.page.theme = ft.Theme(
+                color_scheme_seed=mood_primary_colors.get(new_mood, ft.Colors.BLUE)
+            )
+            return True
+        return False
+
+    def add_to_history(self, city: str):
+        """Add city to search history."""
+        if city not in self.search_history:
+            self.search_history.insert(0, city)
+            self.search_history = self.search_history[:5]  # Keep last 5
+
+    def build_history_dropdown(self):
+        """Build dropdown with search history."""
+        return ft.Dropdown(
+            label="Recent Searches",
+            options=[ft.dropdown.Option(city) for city in self.search_history],
+            on_change=lambda e: self.load_from_history(e.control.value),
+            expand=True
+        )
+    
+    def update_history_dropdown(self):
+        """Refresh the search history dropdown."""
+        if hasattr(self, "history_dropdown"):
+            self.history_dropdown.options = [
+                ft.dropdown.Option(city) for city in self.search_history
+            ]
+            self.page.update()
+
+    def load_from_history(self, city: str):
+        """Load weather for a city from search history."""
+        if city:
+            self.city_input.value = city
+            self.page.update()
+            self.page.run_task(self.get_weather) 
+
+    # ------------------ THEME TOGGLE ------------------ #
+
+    def toggle_theme(self, e):
+        """Toggle between light and dark theme."""
+        if self.page.theme_mode == ft.ThemeMode.LIGHT:
+            self.page.theme_mode = ft.ThemeMode.DARK
+            self.theme_button.icon = ft.Icons.LIGHT_MODE
+        else:
+            self.page.theme_mode = ft.ThemeMode.LIGHT
+            self.theme_button.icon = ft.Icons.DARK_MODE
+
+        self.weather_container.bgcolor = self.get_theme_color()
+
+        if self.last_weather_data:
+            self.display_weather(self.last_weather_data)
+
+        self.page.update()
+
+    # ------------------ UI BUILD ------------------ #
+
+    def build_ui(self):
+        """Build the user interface."""
+        is_dark = self.page.theme_mode == ft.ThemeMode.DARK
+        self.current_temp = 0.0
+        self.feels_like = 0.0
+
+        mood_colors = self.get_mood_colors()
+
+        self.title = ft.Text(
+            "Weather App",
+            size=32,
+            weight=ft.FontWeight.BOLD,
+            color=ft.Colors.BLUE_100 if is_dark else ft.Colors.BLUE_700,
+        )
+
+        self.theme_button = ft.IconButton(
+            icon=ft.Icons.DARK_MODE,
+            tooltip="Toggle theme",
+            on_click=self.toggle_theme,
+        )
+
+        self.unit_button = ft.TextButton(
+            text="°C / °F",
+            on_click=self.toggle_units,
+        )
+
+        self.city_input = ft.TextField(
+            label="Enter city name",
+            hint_text="e.g., London, Tokyo, New York",
+            border_color=mood_colors["primary"],  # Use mood-based color
+            prefix_icon=ft.Icons.LOCATION_CITY,
+            autofocus=True,
+            on_submit=self.on_search,
+        )
+
+        self.search_button = ft.ElevatedButton(
+            "Get Weather",
+            icon=ft.Icons.SEARCH,
+            on_click=self.on_search,
+            style=ft.ButtonStyle(
+                color=ft.Colors.WHITE,
+                bgcolor=mood_colors["primary"],  # Use mood-based color
+            ),
+        )
+
+        # Create the weather content column that will be scrollable
+        self.weather_content = ft.Column(
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=10,
+            scroll=ft.ScrollMode.ADAPTIVE,
+            expand=True,
+        )
+
+        # Container to hold the scrollable content with flexible height
+        self.weather_container = ft.Container(
+            content=self.weather_content,
+            visible=False,
+            bgcolor=self.get_theme_color(),
+            border_radius=10,
+            padding=20,
+            height=400,
+            expand=False,
+        )
+
+        self.error_message = ft.Text(
+            "",
+            color=ft.Colors.RED_700,
+            visible=False,
+        )
+
+        self.loading = ft.ProgressRing(visible=False)
+
+        self.history_dropdown = self.build_history_dropdown()
+
+        self.page.add(
+            ft.Column(
+                [
+                    ft.Row(
+                        [self.title, self.theme_button],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
+                    self.city_input,
+                    ft.Row(
+                        [self.search_button, self.history_dropdown],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                    ),
+                    ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
+                    self.loading,
+                    self.error_message,
+                    # Make the weather container expandable
+                    ft.Container(
+                        content=self.weather_container,
+                        expand=True,
+                    ),
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=5,
+                expand=True,
+            )
+        )
+    
+    # ----------------------- MISC ---------------------- #
+
+    def toggle_units(self, e):
+        """Toggle between Celsius and Fahrenheit."""
+        if self.current_unit == "metric":
+            self.current_unit = "imperial"
+            # Convert existing temperature
+            self.current_temp = (self.current_temp * 9/5) + 32
+            self.feels_like = (self.feels_like * 9/5) + 32
+            self.update_display()
+        else:
+            self.current_unit = "metric"
+            self.current_temp = (self.current_temp - 32) * 5/9
+            self.feels_like = (self.feels_like - 32) * 5/9
+            self.update_display()
+
+    # ------------------ WEATHER LOGIC ------------------ #
+
+    def on_search(self, e):
+        """Handle search button click or enter key press."""
+        self.page.run_task(self.get_weather)
+
+    async def get_weather(self):
+        """Fetch and display weather + forecast data."""
+        city = self.city_input.value.strip()
+
+        if not city:
+            self.show_error("Please enter a city name")
+            return
+
+        self.loading.visible = True
+        self.error_message.visible = False
+        self.weather_container.visible = False
+        self.page.update()
+
+        try:
+            # Fetch current weather and forecast data
+            weather_data = await self.weather_service.get_weather(city)
+            self.forecast_data = await self.weather_service.get_forecast(city)
+
+            # Update mood theme based on weather
+            theme_changed = self.update_mood_theme(weather_data)
+            
+            # Update display with both
+            self.display_weather(weather_data)
+            self.update_display()
+
+            # Add to history
+            self.add_to_history(city)
+            self.update_history_dropdown()
+
+            # Show mood change notification
+            if theme_changed:
+                self.show_mood_notification()
+
+        except Exception as e:
+            self.show_error(str(e))
+        finally:
+            self.loading.visible = False
+            self.page.update()
+
+    def show_mood_notification(self):
+        """Show a notification about the mood change."""
+        mood_messages = {
+            "sunny": "☀️ Bright and sunny mood!",
+            "cloudy": "☁️ Cloudy and calm mood",
+            "rainy": "🌧️ Rainy and cozy mood",
+            "snowy": "❄️ Snowy and chilly mood", 
+            "stormy": "⛈️ Stormy and intense mood",
+            "foggy": "🌫️ Foggy and mysterious mood"
+        }
+        
+        message = mood_messages.get(self.current_mood, "Weather mood updated!")
+        
+        # Simple notification (you could enhance this with a proper snackbar)
+        print(f"Mood changed: {message}")
+
+    def display_weather(self, data: dict):
+        """Display weather information with dynamic theming."""
+        self.last_weather_data = data
+
+        city_name = data.get("name", "Unknown")
+        country = data.get("sys", {}).get("country", "")
+        temp = data.get("main", {}).get("temp", 0)
+        feels_like = data.get("main", {}).get("feels_like", 0)
+        humidity = data.get("main", {}).get("humidity", 0)
+        description = data.get("weather", [{}])[0].get("description", "").title()
+        icon_code = data.get("weather", [{}])[0].get("icon", "01d")
+        wind_speed = data.get("wind", {}).get("speed", 0)
+
+        # ✅ Convert API data based on current unit before displaying
+        if self.current_unit == "imperial":
+            temp = (temp * 9 / 5) + 32
+            feels_like = (feels_like * 9 / 5) + 32
+        elif self.current_unit == "metric":
+            # OpenWeather usually returns Kelvin if no unit param — convert to °C
+            if temp > 200:  # crude check for Kelvin
+                temp -= 273.15
+                feels_like -= 273.15
+
+        self.current_temp = temp
+        self.city_name = city_name
+        self.country = country
+        self.feels_like = feels_like
+        self.humidity = humidity
+        self.description = description
+        self.icon_code = icon_code
+        self.wind_speed = wind_speed
+
+        self.update_display()
+
+        
+    def update_display(self):
+        # Get mood-based colors
+        mood_colors = self.get_mood_colors()
+        text_color = mood_colors["text"]
+        sub_text_color = mood_colors["sub_text"]
+        container_color = self.get_theme_color()
+        divider_color = mood_colors["divider"]
+        card_color = mood_colors["card"]
+        unit_symbol = "°C" if self.current_unit == 'metric' else '°F'
+
+        # Clear previous content
+        self.weather_content.controls.clear()
+
+        # --- MAIN WEATHER DISPLAY ---
+        weather_controls = [
+            self.unit_button,
+            ft.Text(
+                f"{self.city_name}, {self.country}",
+                size=24,
+                weight=ft.FontWeight.BOLD,
+                color=text_color,
+            ),
+            ft.Row(
+                [
+                    ft.Image(
+                        src=f"https://openweathermap.org/img/wn/{self.icon_code}@2x.png",
+                        width=80,
+                        height=80,
+                    ),
+                    ft.Text(
+                        self.description,
+                        size=18,
+                        italic=True,
+                        color=text_color,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            ft.Text(
+                f"{self.current_temp:.1f}{unit_symbol}",
+                size=42,
+                weight=ft.FontWeight.BOLD,
+                color=text_color,
+            ),
+            ft.Text(
+                f"Feels like {self.feels_like:.1f}{unit_symbol}",
+                size=14,
+                color=sub_text_color,
+            ),
+            ft.Divider(color=divider_color, height=10),
+            ft.Row(
+                [
+                    self.create_info_card(
+                        ft.Icons.WATER_DROP,
+                        "Humidity",
+                        f"{self.humidity}%",
+                        card_color=card_color,
+                        text_color=text_color,
+                        sub_color=sub_text_color,
+                    ),
+                    self.create_info_card(
+                        ft.Icons.AIR,
+                        "Wind Speed",
+                        f"{self.wind_speed} m/s",
+                        card_color=card_color,
+                        text_color=text_color,
+                        sub_color=sub_text_color,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+            ),
+        ]
+
+        # Add main weather controls to content
+        self.weather_content.controls.extend(weather_controls)
+
+        # --- 5-DAY FORECAST INTEGRATION ---
+        if hasattr(self, "forecast_data") and self.forecast_data:
+            forecasts = []
+            for entry in self.forecast_data.get("list", []):
+                if "12:00:00" in entry["dt_txt"]:
+                    forecasts.append(entry)
+                if len(forecasts) >= 5:
+                    break
+
+            if not forecasts:
+                forecasts = self.forecast_data["list"][:5]  # fallback
+
+            forecast_cards = []
+            from datetime import datetime
+
+            for entry in forecasts:
+                date = entry["dt_txt"].split(" ")[0]
+                day_name = datetime.strptime(date, "%Y-%m-%d").strftime("%a")
+                temp = entry["main"]["temp"]
+                description = entry["weather"][0]["description"].title()
+                icon_code = entry["weather"][0]["icon"]
+
+                forecast_cards.append(
+                    ft.Container(
+                        bgcolor=card_color,
+                        border_radius=8,
+                        padding=8,
+                        width=90,
+                        content=ft.Column(
+                            [
+                                ft.Text(day_name, size=14, weight=ft.FontWeight.BOLD, color=text_color),
+                                ft.Image(
+                                    src=f"https://openweathermap.org/img/wn/{icon_code}.png",
+                                    width=40,
+                                    height=40,
+                                ),
+                                ft.Text(f"{temp:.1f}{unit_symbol}", size=16, color=text_color),
+                                ft.Text(
+                                    description, 
+                                    size=10,
+                                    color=sub_text_color, 
+                                    text_align=ft.TextAlign.CENTER,
+                                ),
+                            ],
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=3,
+                        ),
+                    )
+                )
+
+            # Add forecast section to content
+            self.weather_content.controls.extend([
+                ft.Divider(color=divider_color, height=10),
+                ft.Text("5-Day Forecast", size=16, weight=ft.FontWeight.BOLD, color=text_color),
+                ft.Container(
+                    content=ft.Row(
+                        controls=forecast_cards,
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        scroll=ft.ScrollMode.ALWAYS,
+                    ),
+                    height=120,
+                ),
+            ])
+
+        # --- Final Layout ---
+        self.weather_container.bgcolor = container_color
+        self.weather_container.visible = True
+        self.error_message.visible = False
+        
+        self.search_button.style.bgcolor = mood_colors["primary"]
+        
+        self.city_input.border_color = mood_colors["primary"]
+        
+        self.weather_container.height = 550
+        self.page.update()
+
+        # --- High Temperature Alert ---
+        if (self.current_unit == "metric" and self.current_temp > 35) or \
+            (self.current_unit == "imperial" and self.current_temp > 95):
+            alert = ft.Banner(
+                bgcolor=ft.Colors.AMBER_100 if self.page.theme_mode == ft.ThemeMode.LIGHT else ft.Colors.AMBER_900,
+                leading=ft.Icon(ft.Icons.WARNING, color=ft.Colors.AMBER, size=40),
+                content=ft.Text("⚠️ High temperature alert!", color=text_color),
+                actions=[
+                    ft.TextButton("Dismiss", on_click=lambda e: self.page.close(alert))
+                ],
+            )
+            self.page.open(alert)
+
+
+    # ------------------ HELPERS ------------------ #
+
+    def create_info_card(self, icon, label, value, card_color, text_color, sub_color):
+        """Create a small info card with icon, label, and value that adapts to theme."""
+        return ft.Container(
+            bgcolor=card_color,
+            border_radius=8,
+            padding=8,
+            content=ft.Column(
+                [
+                    ft.Icon(icon, color=text_color, size=20),
+                    ft.Text(label, size=12, color=sub_color),
+                    ft.Text(value, size=14, weight=ft.FontWeight.BOLD, color=text_color),
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=2,
+            ),
+        )
+
+    def show_error(self, message: str):
+        """Display error message."""
+        self.error_message.value = f"❌ {message}"
+        self.error_message.visible = True
+        self.weather_container.visible = False
+        self.page.update()
+
+
+def main(page: ft.Page):
+    """Main entry point."""
+    WeatherApp(page)
+
+
+if __name__ == "__main__":
+    ft.app(target=main)
