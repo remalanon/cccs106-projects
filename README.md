@@ -9,7 +9,7 @@ ECHO is on.
 - week3_labs/ - User Login GUI
 - week4_labs/ - Contact book app
 - mod6_labs/ - Improved weather app
--   # 🌤️ Weather Mood App - Key Improvements
+-   ### Weather Mood App - Key Improvements
 
 **Smart Mood-Based Theming** - App automatically changes colors based on weather (sunny=orange, rainy=blue, snowy=cyan, etc.)
 
